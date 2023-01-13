@@ -5,11 +5,11 @@
 # The following parameters have been in play to produce the rules:
 #
 # WebP Express options:
-# - Operation mode: varied-image-responses
-# - Redirection to existing webp: enabled
-# - Redirection to converter: enabled
-# - Redirection to converter to create missing webp files upon request for the webp: enabled
-# - Destination folder: separate
+# - Operation mode: no-conversion
+# - Redirection to existing webp: disabled
+# - Redirection to converter: disabled
+# - Redirection to converter to create missing webp files upon request for the webp: disabled
+# - Destination folder: mingled
 # - Destination extension: append
 # - Destination structure: image-roots
 # - Image types: jpeg, png
@@ -25,66 +25,16 @@
 #
 # Role of the dir that this .htaccess is located in:
 # - Is this .htaccess in a dir containing source images?: yes
-# - Is this .htaccess in a dir containing webp images?: no
+# - Is this .htaccess in a dir containing webp images?: yes
 
-# Rules for handling requests for source images
+
+# Rules for handling requests for webp images
 # ---------------------------------------------
 
-<IfModule mod_rewrite.c>
-	RewriteEngine On
-	
-# Escape hatch #1: Adding ?dontreplace to an url can be used to bypass redirection
-	RewriteCond %{QUERY_STRING} dontreplace$
-	RewriteCond %{REQUEST_FILENAME} -f
-	RewriteRule . - [L]
-	
-# Escape hatch #2: Placing an empty file in the same folder as the jpeg/png which has same file name, but ".dontreplace" appended will bypass redirection
-	RewriteCond %{REQUEST_FILENAME} (?i)(.*)(\.jpe?g|\.png)$
-	RewriteCond %1%2\.dontreplace -f
-	RewriteRule . - [L]
-	
-# Deprecated escape hatch: Adding ?original to an url can be used to bypass redirection
-	RewriteCond %{QUERY_STRING} original$
-	RewriteCond %{REQUEST_FILENAME} -f
-	RewriteRule . - [L]
-	
-# Deprecated escape hatch: Placing an empty file in the same folder as the jpeg/png which has same file name, but ".do-not-convert" appended will bypass redirection
-	RewriteCond %{REQUEST_FILENAME} (?i)(.*)(\.jpe?g|\.png)$
-	RewriteCond %1%2\.do-not-convert -f
-	RewriteRule . - [L]
-	
-# Avoid redirecting to webp files that are bigger than the original
-	RewriteCond %{REQUEST_FILENAME} -f
-	RewriteCond %{REQUEST_FILENAME} (?i)(F:/wamp/www\radix/wp-content/uploads/)(.*)(\.jpe?g|\.png)$
-	RewriteCond F:/wamp/www/radix/wp-content/webp-express/webp-images-bigger-than-source/uploads/%2%3.webp -f
-	RewriteRule . - [L]
-	
-# Redirect to existing converted image in cache-dir (if browser supports webp)
-	RewriteCond %{HTTP_ACCEPT} image/webp
-	RewriteCond %{REQUEST_FILENAME} -f
-	RewriteCond %{REQUEST_FILENAME} (?i)(F:/wamp/www\radix/wp-content/uploads/)(.*)(\.jpe?g|\.png)$
-	RewriteCond F:/wamp/www/radix/wp-content/webp-express/webp-images/uploads/%2%3.webp -f
-	RewriteRule (?i)(.*)(\.jpe?g|\.png)$ /radix/wp-content/webp-express/webp-images/uploads/%2%3\.webp [T=image/webp,E=EXISTING:1,L]
-	
-# Redirect images to webp-on-demand.php (if browser supports webp)
-	RewriteCond %{HTTP_ACCEPT} image/webp
-	RewriteCond %{REQUEST_FILENAME} -f
-	RewriteCond %{REQUEST_FILENAME} (?i)(.*)(\.jpe?g|\.png)$
-	RewriteRule (?i).*$ /radix/wp-content/plugins/webp-express/wod/webp-on-demand.php [E=WE_WP_CONTENT_REL_TO_WE_PLUGIN_DIR:../../,E=WE_SOURCE_REL_HTACCESS:$0,E=WE_HTACCESS_ID:uploads,NC,L]
-	
-# Make sure that browsers which does not support webp also gets the Vary:Accept header
-# when requesting images that would be redirected to webp on browsers that does.
-	<IfModule mod_headers.c>
-		<FilesMatch "(?i)\.(jpe?g|png)$">
-			Header append "Vary" "Accept"
-		</FilesMatch>
-	</IfModule>
-	
-</IfModule>
 
-# END WebP Express
-# BEGIN Register webp mime type
+# Register webp mime type
 <IfModule mod_mime.c>
 	AddType image/webp .webp
 </IfModule>
-# END Register webp mime type
+
+# END WebP Express

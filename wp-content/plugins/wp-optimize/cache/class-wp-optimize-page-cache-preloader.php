@@ -330,18 +330,6 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 	}
 
 	/**
-	 * Get the path to a local sitemap file
-	 *
-	 * @return string
-	 */
-	private function get_local_sitemap_file() {
-		if (!function_exists('get_home_path')) {
-			include_once ABSPATH . '/wp-admin/includes/file.php';
-		}
-		return trailingslashit(get_home_path()) . $this->get_sitemap_filename();
-	}
-
-	/**
 	 * Get all posts of any post type and returns urls for them.
 	 *
 	 * @return array

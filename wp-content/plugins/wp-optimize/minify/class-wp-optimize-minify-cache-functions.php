@@ -487,7 +487,8 @@ class WP_Optimize_Minify_Cache_Functions {
 			'minify/cached-file-log.php',
 			true,
 			array(
-				'log' => $files['log']
+				'log' => $files['log'],
+				'minify_config' => wp_optimize_minify_config()->get(),
 			)
 		);
 		return $files;

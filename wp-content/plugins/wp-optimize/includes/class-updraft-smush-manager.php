@@ -1068,9 +1068,9 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_3 {
 		// load scripts and styles only on WP-Optimize pages or if show_smush_metabox option enabled.
 		if (!preg_match('/wp\-optimize|attachment|upload/i', $current_screen->id) && 'show' != $this->options->get_option('show_smush_metabox', 'show')) return;
 
-		$enqueue_version = (defined('WP_DEBUG') && WP_DEBUG) ? WPO_VERSION.'.'.time() : WPO_VERSION;
-		$min_or_not = (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG) ? '' : '.min';
-		$min_or_not_internal = (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG) ? '' : '-'. str_replace('.', '-', WPO_VERSION). '.min';
+		$enqueue_version = WP_Optimize()->get_enqueue_version();
+		$min_or_not = WP_Optimize()->get_min_or_not_string();
+		$min_or_not_internal = WP_Optimize()->get_min_or_not_internal_string();
 		
 		$js_variables = $this->smush_js_translations();
 		$js_variables['ajaxurl'] = admin_url('admin-ajax.php');

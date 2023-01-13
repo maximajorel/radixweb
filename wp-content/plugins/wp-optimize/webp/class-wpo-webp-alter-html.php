@@ -208,6 +208,7 @@ class WPO_WebP_Alter_HTML {
 	 */
 	private function is_webp_version_available($url) {
 		$filename = $this->get_file_path($url);
+		if (empty($filename)) return false;
 		return file_exists($filename . '.webp');
 	}
 

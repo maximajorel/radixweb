@@ -189,7 +189,7 @@ class WP_Optimize_Minify {
 	 */
 	public function plugin_deactivate() {
 		if (defined('WPO_MINIFY_PHP_VERSION_MET') && !WPO_MINIFY_PHP_VERSION_MET) return;
-		if (class_exists('WP_Optimize_Minify_Cache_Functions')) {
+		if (class_exists('WP_Optimize_Minify_Cache_Functions') && WP_Optimize()->get_page_cache()->should_purge) {
 			WP_Optimize_Minify_Cache_Functions::purge_temp_files();
 			WP_Optimize_Minify_Cache_Functions::purge_old();
 			WP_Optimize_Minify_Cache_Functions::purge_others();
@@ -257,5 +257,20 @@ class WP_Optimize_Minify {
 			</div>
 		<?php
 		endif;
+	}
+
+	/**
+	 * Check if current user can purge cache.
+	 *
+	 * @return bool
+	 */
+	public function can_purge_cache() {
+		$required_capability = is_multisite() ? 'manage_network_options' : 'manage_options';
+
+		if (WP_Optimize::is_premium()) {
+			return current_user_can($required_capability) || WP_Optimize_Premium()->can_purge_the_cache();
+		} else {
+			return current_user_can($required_capability);
+		}
 	}
 }

@@ -1,8 +1,8 @@
 {
     "wod": {
         "enable-logging": false,
-        "enable-redirection-to-converter": true,
-        "enable-redirection-to-webp-realizer": true,
+        "enable-redirection-to-converter": false,
+        "enable-redirection-to-webp-realizer": false,
         "base-htaccess-on-these-capability-tests": {
             "passThroughHeaderWorking": false,
             "passThroughEnvWorking": true,
@@ -11,7 +11,7 @@
             "canRunTestScriptInWOD2": true
         },
         "destination-extension": "append",
-        "destination-folder": "separate",
+        "destination-folder": "mingled",
         "forward-query-string": true,
         "image-roots": [
             {

@@ -8,7 +8,6 @@ $baseDir = dirname($vendorDir);
 return array(
     'tubalmartin\\CssMin\\' => array($vendorDir . '/tubalmartin/cssmin/src'),
     'WebPConvert\\' => array($vendorDir . '/rosell-dk/webp-convert/src'),
-    'WebPConvertCloudService\\' => array($vendorDir . '/rosell-dk/webp-convert-cloud-service/src'),
     'Psr\\Log\\' => array($vendorDir . '/psr/log/Psr/Log'),
     'Psr\\Container\\' => array($vendorDir . '/psr/container/src'),
     'Monolog\\' => array($vendorDir . '/monolog/monolog/src/Monolog'),

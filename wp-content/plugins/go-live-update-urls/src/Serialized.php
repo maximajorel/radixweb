@@ -74,7 +74,7 @@ class Serialized {
 			if ( ! in_array( $table, $tables, true ) ) {
 				continue;
 			}
-			$counts[ $table ] = array_sum( array_map( function ( $column ) use ( $table ) {
+			$counts[ $table ] = array_sum( array_map( function( $column ) use ( $table ) {
 				return $this->update_table( $table, $column );
 			}, (array) $columns ) );
 		}
@@ -100,29 +100,34 @@ class Serialized {
 		if ( empty( $pk[0] ) ) {
 			$pk = $wpdb->get_results( 'SHOW KEYS FROM `' . $table . '`' );
 			if ( empty( $pk[0] ) ) {
-				// Fail.
-				return 0;
+				return 0;    // Fail.
 			}
 		}
 		$primary_key_column = $pk[0]->Column_name;
+		Skip_Rows::instance()->set_current_table( $table, $primary_key_column );
 
 		// Get all serialized rows.
 		$rows = $wpdb->get_results( "SELECT `$primary_key_column`, `{$column}` FROM `{$table}` WHERE `{$column}` LIKE 'a:%' OR `{$column}` LIKE 'O:%'" ); //phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		foreach ( $rows as $k => $row ) {
+		foreach ( $rows as $row ) {
 			if ( ! $this->has_data_to_update( $row->{$column} ) ) {
 				continue;
 			}
 
+			Skip_Rows::instance()->set_current_row_id( $row->{$primary_key_column} );
 			//phpcs:disable
 			$clean = $this->replace_tree( @unserialize( $row->{$column} ) );
-			$clean = @serialize( $clean );
-			//phpcs:enable
+			if ( empty( $clean ) ) {
+				continue;
+			}
 
 			if ( ! $this->dry_run ) {
-				//phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				$wpdb->query( $wpdb->prepare( "UPDATE `{$table}` SET `{$column}`=%s WHERE `{$primary_key_column}` = %s", $clean, $row->{$primary_key_column} ) );
+				$clean = @serialize( $clean );
+				if ( \is_string( $clean ) && ! empty( $clean ) ) {
+					$wpdb->query( $wpdb->prepare( "UPDATE `{$table}` SET `{$column}`=%s WHERE `{$primary_key_column}` = %s", $clean, $row->{$primary_key_column} ) );
+				}
 			}
+			//phpcs:enable
 		}
 
 		return $this->count;
@@ -141,6 +146,11 @@ class Serialized {
 	public function replace_tree( $data ) {
 		if ( is_string( $data ) ) {
 			return $this->replace( $data );
+		}
+
+		if ( $this->has_missing_classes( $data ) ) {
+			Skip_Rows::instance()->skip_current();
+			return $data;
 		}
 
 		if ( ! is_array( $data ) && ! is_object( $data ) ) {
@@ -209,6 +219,36 @@ class Serialized {
 			}
 		}
 
+		return false;
+	}
+
+
+	/**
+	 * Wrapper around `unserialize` to support gracefully
+	 * failing to unserialize a value due to a missing class.
+	 *
+	 * If a class is not available when `unserialize` is called
+	 * PHP automatically converts the result to `__PHP_Incomplete_Class`.
+	 *
+	 * @ticket #10723
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param object|array $data - Value from the database column.
+	 *
+	 * @return bool
+	 */
+	protected function has_missing_classes( $data ) {
+		if ( is_a( $data, \__PHP_Incomplete_Class::class ) ) {
+			// Hack to get the name of the class from __PHP_Incomplete_Class without `Error`.
+			foreach ( (array) $data as $key => $name ) {
+				if ( '__PHP_Incomplete_Class_Name' === $key ) {
+					error_log( 'Go Live skipped row because it contains an unavailable PHP class named `' . $name . '`.' ); //phpcs:ignore
+					return true;
+				}
+			}
+			return true;
+		}
 		return false;
 	}
 

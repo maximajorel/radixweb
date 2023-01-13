@@ -39,6 +39,24 @@ class WP_Optimize_Commands {
 	public function get_status_box_contents() {
 		return WP_Optimize()->include_template('database/status-box-contents.php', true, array('optimize_db' => false));
 	}
+
+	/**
+	 * Get the database tabs information.
+	 *
+	 * @return string auto cleanup content.
+	 */
+	public function get_settings_auto_cleanup_contents() {
+		return WP_Optimize()->include_template('database/settings-auto-cleanup.php', true, array('optimize_db' => false, 'show_innodb_option' => WP_Optimize()->template_should_include_data() && $this->optimizer->show_innodb_force_optimize()));
+	}
+
+	/**
+	 * Get the settings tab information.
+	 *
+	 * @return string logging settings content.
+	 */
+	public function get_logging_settings_contents() {
+		return WP_Optimize()->include_template('settings/settings-logging.php', true, array('optimize_db' => false));
+	}
 	
 	/**
 	 * Get the database tabs information
@@ -132,11 +150,14 @@ class WP_Optimize_Commands {
 		
 		parse_str(stripslashes($data), $posted_settings);
 
+		$saved_settings = $this->options->save_settings($posted_settings);
 		// We now have $posted_settings as an array.
 		return array(
-			'save_results' => $this->options->save_settings($posted_settings),
+			'save_results' => $saved_settings,
 			'status_box_contents' => $this->get_status_box_contents(),
 			'optimizations_table' => $this->get_optimizations_table(),
+			'settings_auto_cleanup_contents' => $this->get_settings_auto_cleanup_contents(),
+			'logging_settings_contents' => $this->get_logging_settings_contents(),
 		);
 	}
 

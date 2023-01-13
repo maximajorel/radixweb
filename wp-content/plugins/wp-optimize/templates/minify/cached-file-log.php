@@ -9,7 +9,7 @@ foreach ((array) $log->files as $handle => $file) {
 	if (property_exists($file, 'debug')) echo '<span class="wpo_min_file_debug">'.htmlspecialchars($file->debug).'</span>';
 	echo ' <span class="wrapper">';
 	printf(' <a href="#" data-url="%1$s" class="exclude">%2$s</a>', htmlspecialchars($file->url), __('Exclude', 'wp-optimize'));
-	$minify_config = get_option('wpo_minify_config');
+
 	if (preg_match('/\.js$/i', $file->url, $matches)) {
 		if ('individual' === $minify_config['enable_defer_js']) {
 			printf(' | <a href="#" data-url="%1$s" class="defer">%2$s</a>', htmlspecialchars($file->url), __('Defer loading', 'wp-optimize'));
